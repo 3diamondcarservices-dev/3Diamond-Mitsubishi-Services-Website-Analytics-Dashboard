@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3Diamond Mitsubishi Services - Analytics Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #0056a6;
+            --secondary: #d52b1e;
+            --accent: #ffc72c;
+            --dark: #1a2b3c;
+            --light: #f5f9ff;
+            --gray: #6c757d;
+            --success: #28a745;
+            --card-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f9ff 0%, #e6f0ff 100%);
+            color: var(--dark);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, #003d7a 100%);
+            color: white;
+            padding: 25px 0;
+            border-radius: 0 0 15px 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .header-content {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo {
+            width: 50px;
+            height: 50px;
+            background: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: var(--primary);
+            font-size: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .site-title h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .site-title p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .date-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 10px 20px;
+            border-radius: 10px;
+            backdrop-filter: blur(5px);
+        }
+
+        .date-selector select {
+            border: none;
+            background: transparent;
+            font-weight: 500;
+            color: white;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        .date-selector option {
+            color: var(--dark);
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: var(--card-shadow);
+            transition: var(--transition);
+            border-top: 4px solid var(--primary);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--gray);
+        }
+
+        .card-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 22px;
+            background: var(--primary);
+        }
+
+        .metric {
+            font-size: 42px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--dark);
+            display: flex;
+            align-items: flex-end;
+        }
+
+        .metric-change {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        .positive {
+            color: var(--success);
+        }
+
+        .negative {
+            color: var(--secondary);
+        }
+
+        .chart-container {
+            height: 80px;
+            margin-top: 20px;
+        }
+
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .data-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .data-card h3 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .data-card h3 i {
+            color: var(--primary);
+        }
+
+        .data-list {
+            list-style: none;
+        }
+
+        .data-list li {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .data-list li:last-child {
+            border-bottom: none;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            border-radius: 4px;
+        }
+
+        .progress-new {
+            width: 35%;
+            background: var(--success);
+        }
+
+        .progress-returning {
+            width: 65%;
+            background: var(--primary);
+        }
+
+        .progress-bounce {
+            width: 35%;
+            background: var(--secondary);
+        }
+
+        .website-preview {
+            margin-top: 40px;
+        }
+
+        .preview-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .website-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .website-title {
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .website-url {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: var(--transition);
+        }
+
+        .website-url:hover {
+            color: var(--secondary);
+        }
+
+        .website-frame {
+            width: 100%;
+            height: 400px;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .website-screenshot {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0056a6 0%, #003d7a 100%);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .website-screenshot i {
+            font-size: 50px;
+            margin-bottom: 20px;
+            opacity: 0.8;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 25px;
+            color: var(--gray);
+            font-size: 15px;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .highlight {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .data-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .date-selector {
+                align-self: center;
+            }
+            
+            .metric {
+                font-size: 36px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo-area">
+                <div class="logo">3D</div>
+                <div class="site-title">
+                    <h1>3Diamond Mitsubishi Services</h1>
+                    <p>Website Analytics Dashboard</p>
+                </div>
+            </div>
+            <div class="date-selector">
+                <i class="far fa-calendar-alt"></i>
+                <select id="dateRange">
+                    <option value="7">Last 7 days</option>
+                    <option value="30" selected>Last 30 days</option>
+                    <option value="90">Last 90 days</option>
+                    <option value="365">Last year</option>
+                </select>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="dashboard">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Total Viewers</div>
+                    <div class="card-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                </div>
+                <div class="metric" id="totalVisitors">3,000</div>
+                <div class="metric-change positive">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>15.3% increase</span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="visitorsChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">New Visitors</div>
+                    <div class="card-icon" style="background: var(--success);">
+                        <i class="fas fa-user-plus"></i>
+                    </div>
+                </div>
+                <div class="metric" id="newVisitors">35</div>
+                <div class="metric-change positive">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>8.7% increase</span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="newVisitorsChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Bounce Rate</div>
+                    <div class="card-icon" style="background: var(--secondary);">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </div>
+                </div>
+                <div class="metric" id="bounceRate">35%</div>
+                <div class="metric-change positive">
+                    <i class="fas fa-arrow-down"></i>
+                    <span>12.5% improvement</span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="bounceChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="data-grid">
+            <div class="data-card">
+                <h3><i class="fas fa-chart-pie"></i> Traffic Sources</h3>
+                <ul class="data-list">
+                    <li>
+                        <span>Direct</span>
+                        <span>42%</span>
+                    </li>
+                    <li>
+                        <span>Organic Search</span>
+                        <span>31%</span>
+                    </li>
+                    <li>
+                        <span>Social Media</span>
+                        <span>15%</span>
+                    </li>
+                    <li>
+                        <span>Referral</span>
+                        <span>12%</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="data-card">
+                <h3><i class="fas fa-user-check"></i> User Metrics</h3>
+                <ul class="data-list">
+                    <li>
+                        <div>
+                            <span>New Visitors</span>
+                            <div class="progress-bar">
+                                <div class="progress progress-new"></div>
+                            </div>
+                        </div>
+                        <span>35%</span>
+                    </li>
+                    <li>
+                        <div>
+                            <span>Returning Visitors</span>
+                            <div class="progress-bar">
+                                <div class="progress progress-returning"></div>
+                            </div>
+                        </div>
+                        <span>65%</span>
+                    </li>
+                    <li>
+                        <div>
+                            <span>Bounce Rate</span>
+                            <div class="progress-bar">
+                                <div class="progress progress-bounce"></div>
+                            </div>
+                        </div>
+                        <span>35%</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="data-card">
+                <h3><i class="fas fa-globe"></i> Top Pages</h3>
+                <ul class="data-list">
+                    <li>
+                        <span>Homepage</span>
+                        <span>24%</span>
+                    </li>
+                    <li>
+                        <span>Services</span>
+                        <span>18%</span>
+                    </li>
+                    <li>
+                        <span>About Us</span>
+                        <span>14%</span>
+                    </li>
+                    <li>
+                        <span>Contact</span>
+                        <span>9%</span>
+                    </li>
+                    <li>
+                        <span>Blog</span>
+                        <span>7%</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="website-preview">
+            <div class="preview-card">
+                <div class="website-header">
+                    <div class="website-title">Website Preview</div>
+                    <a href="https://3diamond-mistubishi-services.netlify.app/" class="website-url" target="_blank">
+                        https://3diamond-mistubishi-services.netlify.app/
+                        <i class="fas fa-external-link-alt"></i>
+                    </a>
+                </div>
+                <div class="website-frame">
+                    <div class="website-screenshot">
+                        <i class="fas fa-car"></i>
+                        <h3>3Diamond Mitsubishi Services</h3>
+                        <p>Professional automotive services and maintenance</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Analytics Dashboard for <span class="highlight">3Diamond Mitsubishi Services</span> &copy; 2023 | Data updated: <span id="currentDate"></span></p>
+        </footer>
+    </div>
+
+    <script>
+        // Set current date in footer
+        document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+
+        // Initialize charts
+        document.addEventListener('DOMContentLoaded', function() {
+            // Total Visitors Chart
+            const visitorsCtx = document.getElementById('visitorsChart').getContext('2d');
+            const visitorsChart = new Chart(visitorsCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Viewers',
+                        data: [420, 450, 480, 460, 500, 520, 550],
+                        borderColor: '#0056a6',
+                        backgroundColor: 'rgba(0, 86, 166, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                display: false
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+
+            // New Visitors Chart
+            const newVisitorsCtx = document.getElementById('newVisitorsChart').getContext('2d');
+            const newVisitorsChart = new Chart(newVisitorsCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'New Visitors',
+                        data: [5, 7, 4, 6, 8, 3, 2],
+                        backgroundColor: '#28a745',
+                        borderWidth: 0,
+                        borderRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                display: false
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Bounce Rate Chart
+            const bounceCtx = document.getElementById('bounceChart').getContext('2d');
+            const bounceChart = new Chart(bounceCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Bounce Rate',
+                        data: [42, 40, 38, 37, 36, 35, 35],
+                        borderColor: '#d52b1e',
+                        backgroundColor: 'rgba(213, 43, 30, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                display: false
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        });
+
+        // Date range selector functionality
+        document.getElementById('dateRange').addEventListener('change', function() {
+            // In a real application, this would fetch new data based on the selected range
+            console.log('Date range changed to:', this.value);
+            
+            // Show loading state
+            const metrics = document.querySelectorAll('.metric');
+            metrics.forEach(metric => {
+                const originalText = metric.textContent;
+                metric.textContent = '...';
+                
+                // Restore after a brief delay (simulating data loading)
+                setTimeout(() => {
+                    metric.textContent = originalText;
+                }, 800);
+            });
+        });
+    </script>
+</body>
+</html>
